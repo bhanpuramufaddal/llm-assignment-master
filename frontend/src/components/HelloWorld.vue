@@ -6,13 +6,22 @@
           <h1 class="title">Document Question Answering</h1>
         </a-typography>
         <a-card class="form-container">
-          <a-input type="file" @change="handleFileUpload" class="input-file" />
+          <a-upload
+            class="upload-btn"
+            :before-upload="handleBeforeUpload"
+            :show-upload-list="false"
+            @change="handleFileUpload"
+          >
+            <a-button> <upload-icon /> Click to Upload </a-button>
+          </a-upload>
 
+          <!-- Text input with added margin for spacing -->
           <a-input
             type="text"
             v-model="query"
             class="query-input"
             placeholder="Enter query text"
+            :style="{ marginTop: '20px' }"
           />
           <a-button type="primary" @click="submitData" class="submit-button">
             Submit
@@ -42,9 +51,10 @@ import {
   Card,
   Button,
   Input,
+  Upload,
   message,
 } from "ant-design-vue";
-// import { UploadOutlined } from "@ant-design/icons-vue";
+import { UploadOutlined } from "@ant-design/icons-vue";
 
 export default {
   name: "DocumentQuestionAnswering",
@@ -53,10 +63,10 @@ export default {
     "a-layout-content": Layout.Content,
     "a-typography": Typography,
     "a-card": Card,
-    // "a-upload": Upload,
+    "a-upload": Upload,
     "a-button": Button,
     "a-input": Input,
-    // "upload-icon": UploadOutlined,
+    "upload-icon": UploadOutlined,
   },
 
   data() {
@@ -67,12 +77,17 @@ export default {
     };
   },
   methods: {
-    handleFileUpload(event) {
-      this.file = event.target.files[0];
+    handleBeforeUpload() {
+      this.file = null;
+      return true;
+    },
+    handleFileUpload(info) {
+      console.log(info);
+      this.file = info.file;
     },
     async submitData() {
       if (!this.file) {
-        alert("Please select a file.");
+        message.error("Please select a file.");
         return;
       }
 
@@ -92,6 +107,7 @@ export default {
         );
 
         this.apiResponse = response.data.result;
+        message.success("Data submitted successfully.");
       } catch (error) {
         console.error("API request failed:", error);
         message.error("Failed to get response from the API.");
@@ -126,15 +142,21 @@ export default {
 
 .query-input {
   width: 100%;
+  margin-top: 20px; /* Added margin for spacing */
 }
 
 .submit-button {
   width: 100%;
+  margin-top: 20px; /* Added margin for spacing */
 }
 
 .response {
   background-color: #f0f0f0;
   border-radius: 4px;
   padding: 15px;
+}
+
+.upload-btn {
+  margin-bottom: 20px; /* Added margin for spacing */
 }
 </style>
