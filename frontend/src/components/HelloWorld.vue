@@ -23,6 +23,9 @@
             placeholder="Enter query text"
             :style="{ marginTop: '20px' }"
           />
+          <div v-if="file" class="file-name">
+            <p>Uploaded File: {{ file.name }}</p>
+          </div>
           <a-button type="primary" @click="submitData" class="submit-button">
             Submit
           </a-button>
