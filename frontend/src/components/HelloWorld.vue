@@ -16,12 +16,12 @@
           </a-upload>
 
           <!-- Text input with added margin for spacing -->
-          <a-input
-            type="text"
-            v-model="query"
-            class="query-input"
+          <a-textarea
+            @change="updateQuery"
+            class="textarea"
             placeholder="Enter query text"
             :style="{ marginTop: '20px' }"
+            :rows="4"
           />
           <div v-if="file" class="file-name">
             <p>Uploaded File: {{ file.name }}</p>
@@ -30,22 +30,26 @@
             Submit
           </a-button>
         </a-card>
-        <a-card
-          v-if="apiResponse"
-          class="response-container"
-          style="margin-top: 20px"
-        >
-          <a-typography>
-            <h3 class="response-title">API Response:</h3>
-          </a-typography>
-          <div v-html="renderMarkdown(apiResponse)" class="response"></div>
-        </a-card>
       </div>
+
+      <a-typography>
+        <h3 class="response-title">API Response:</h3>
+      </a-typography>
+      <a-card
+        class="response-container"
+        v-if="apiResponse"
+        style="margin-top: 20px; width: 1400px; word-wrap: break-word"
+      >
+        <a-typography class="primary">
+          {{ apiResponse }}
+        </a-typography>
+      </a-card>
     </a-layout-content>
   </a-layout>
 </template>
 
 <script>
+import { ref } from "vue";
 import axios from "axios";
 import markdownIt from "markdown-it";
 import {
@@ -53,7 +57,6 @@ import {
   Typography,
   Card,
   Button,
-  Input,
   Upload,
   message,
 } from "ant-design-vue";
@@ -68,35 +71,48 @@ export default {
     "a-card": Card,
     "a-upload": Upload,
     "a-button": Button,
-    "a-input": Input,
     "upload-icon": UploadOutlined,
   },
 
-  data() {
-    return {
-      file: null,
-      query: "",
-      apiResponse: null,
-    };
-  },
-  methods: {
-    handleBeforeUpload() {
-      this.file = null;
+  setup() {
+    const file = ref(null);
+    let query = "query 1";
+    const apiResponse = ref(null);
+
+    const handleBeforeUpload = () => {
+      file.value = null;
       return true;
-    },
-    handleFileUpload(info) {
+    };
+
+    const handleFileUpload = (info) => {
       console.log(info);
-      this.file = info.file;
-    },
-    async submitData() {
-      if (!this.file) {
+      file.value = info.file;
+      // Check if the file if pdf
+      if (file.value.type !== "application/pdf") {
+        message.error("Please upload a PDF file.");
+        file.value = null;
+      }
+
+      // Check if file is under 100MB
+      if (file.value.size > 100 * 1024 * 1024) {
+        message.error("File size must be smaller than 100MB!");
+        file.value = null;
+      }
+    };
+
+    const updateQuery = (event) => {
+      query = event.target.value;
+    };
+
+    const submitData = async () => {
+      if (!file.value) {
         message.error("Please select a file.");
         return;
       }
 
-      const formData = new FormData();
-      formData.append("file", this.file);
-      formData.append("query", this.query);
+      let formData = new FormData();
+      formData.append("file", file.value.originFileObj);
+      formData.append("query", query);
 
       try {
         const response = await axios.post(
@@ -109,25 +125,36 @@ export default {
           }
         );
 
-        this.apiResponse = response.data.result;
+        apiResponse.value = response.data.result;
         message.success("Data submitted successfully.");
       } catch (error) {
         console.error("API request failed:", error);
         message.error("Failed to get response from the API.");
-        this.apiResponse = null;
+        apiResponse.value = null;
       }
-    },
-    renderMarkdown(text) {
+    };
+
+    const renderMarkdown = (text) => {
       const md = new markdownIt();
       return md.render(text);
-    },
+    };
+
+    return {
+      file,
+      query,
+      apiResponse,
+      updateQuery,
+      handleBeforeUpload,
+      handleFileUpload,
+      submitData,
+      renderMarkdown,
+    };
   },
 };
 </script>
 
 <style scoped>
 .container {
-  max-width: 600px;
   margin: 0 auto;
 }
 
@@ -149,7 +176,7 @@ export default {
 }
 
 .submit-button {
-  width: 100%;
+  width: 20%;
   margin-top: 20px; /* Added margin for spacing */
 }
 
