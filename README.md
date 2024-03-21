@@ -32,7 +32,6 @@ Currently, trhe pdf files and subsequently vectordb index does not persist be ao
 1. create_index
 2. upsert_file
 3. remove_index
-4. 
 
    
 
