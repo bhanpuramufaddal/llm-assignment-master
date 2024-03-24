@@ -1,49 +1,50 @@
 <template>
   <a-layout class="layout">
     <a-layout-content :style="{ padding: '50px' }">
-      <div class="container">
+      <div class="container" style="text-align: left">
         <a-typography>
           <h1 class="title">Document Question Answering</h1>
         </a-typography>
-        <a-card class="form-container">
-          <a-upload
-            class="upload-btn"
-            :before-upload="handleBeforeUpload"
-            :show-upload-list="false"
-            @change="handleFileUpload"
-          >
-            <a-button> <upload-icon /> Click to Upload </a-button>
-          </a-upload>
-
-          <!-- Text input with added margin for spacing -->
-          <a-textarea
+        <a-card>
+          <a-input
             @change="updateQuery"
-            class="textarea"
+            class="input"
             placeholder="Enter query text"
-            :style="{ marginTop: '20px' }"
-            :rows="4"
           />
           <div v-if="file" class="file-name">
             <p>Uploaded File: {{ file.name }}</p>
           </div>
-          <a-button type="primary" @click="submitData" class="submit-button">
-            Submit
-          </a-button>
+          <a-col>
+            <a-upload
+              class="upload-btn"
+              :before-upload="handleBeforeUpload"
+              :show-upload-list="false"
+              @change="handleFileUpload"
+            >
+              <a-button type="primary" ghost>
+                <upload-icon /> Click to Upload
+              </a-button>
+            </a-upload>
+            <span>&nbsp;&nbsp;</span>
+            <a-button
+              type="primary"
+              @click="submitData"
+              class="submit-button"
+              :disabled="submitting"
+            >
+              Submit
+            </a-button>
+          </a-col>
+
+          <a-typography>
+            <h3 class="response-title" style="text-align: left">Results</h3>
+          </a-typography>
+
+          <a-typography class="primary" style="font-size: 20px; width: 1200px">
+            {{ apiResponse }}
+          </a-typography>
         </a-card>
       </div>
-
-      <a-typography>
-        <h3 class="response-title">API Response:</h3>
-      </a-typography>
-      <a-card
-        class="response-container"
-        v-if="apiResponse"
-        style="margin-top: 20px; width: 1400px; word-wrap: break-word"
-      >
-        <a-typography class="primary">
-          {{ apiResponse }}
-        </a-typography>
-      </a-card>
     </a-layout-content>
   </a-layout>
 </template>
@@ -78,6 +79,7 @@ export default {
     const file = ref(null);
     let query = "query 1";
     const apiResponse = ref(null);
+    const submitting = ref(false);
 
     const handleBeforeUpload = () => {
       file.value = null;
@@ -94,8 +96,8 @@ export default {
       }
 
       // Check if file is under 100MB
-      if (file.value.size > 100 * 1024 * 1024) {
-        message.error("File size must be smaller than 100MB!");
+      if (file.value.size > 10 * 1024 * 1024) {
+        message.error("File size must be smaller than 10MB!");
         file.value = null;
       }
     };
@@ -105,6 +107,8 @@ export default {
     };
 
     const submitData = async () => {
+      submitting.value = true;
+
       if (!file.value) {
         message.error("Please select a file.");
         return;
@@ -116,7 +120,7 @@ export default {
 
       try {
         const response = await axios.post(
-          "http://localhost:8080/predict",
+          "https://ragbackend.azurewebsites.net//predict",
           formData,
           {
             headers: {
@@ -131,6 +135,8 @@ export default {
         console.error("API request failed:", error);
         message.error("Failed to get response from the API.");
         apiResponse.value = null;
+      } finally {
+        submitting.value = false;
       }
     };
 
@@ -147,6 +153,7 @@ export default {
       handleBeforeUpload,
       handleFileUpload,
       submitData,
+      submitting,
       renderMarkdown,
     };
   },
@@ -163,27 +170,14 @@ export default {
   margin-bottom: 20px;
 }
 
-.form-container,
-.response-container {
-  background: #fff;
-  padding: 24px;
-  border-radius: 4px;
-}
-
-.query-input {
-  width: 100%;
-  margin-top: 20px; /* Added margin for spacing */
+.input {
+  margin-top: 20px;
+  font-size: 30px;
 }
 
 .submit-button {
   width: 20%;
   margin-top: 20px; /* Added margin for spacing */
-}
-
-.response {
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  padding: 15px;
 }
 
 .upload-btn {

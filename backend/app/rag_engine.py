@@ -4,7 +4,9 @@ import re
 from app.utils import extract_text_from_pdf, preprocess_text, split_text
 from app.qa_model import QaModel
 from app.vector_db import VectorDB
+from dotenv import load_dotenv
 
+load_dotenv()
 MODEL_ID = os.getenv("MODEL_ID")
 
 class RagEngine:
@@ -19,7 +21,9 @@ class RagEngine:
 
     def get_most_relevant_chunk(self, query, chunks):
         vector_db = VectorDB(chunks)
-        return vector_db.topk(query, k = 1)[0]
+        result = vector_db.topk(query, k = 1)[0]
+        vector_db.destroy()
+        return result
 
     def answer_question(self, query, file_contents):
         chunks = self.get_chunks_from_pdf(file_contents)

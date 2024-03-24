@@ -35,5 +35,5 @@ async def predict(query:str = Form(...), file: UploadFile = File(...)):
     #     "result": fake_answer
     # }
     result = ragEngine.answer_question(query, file.file)
-    result = preprocess_text(result)
+    #result = preprocess_text(result)
     return {"result": result}
