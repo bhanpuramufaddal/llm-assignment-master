@@ -26,7 +26,7 @@ In order to run the application:
 
 ## Additional Notes
 1. Only pdf files are supported, if you upload a file other than a pdf, the UI will throw an error on the screen.
-2. The max file size supported is 100 MB, if a file is bigger than that, you get an error.
+2. The max file size supported is 10 MB, if a file is bigger than that, you get an error.
 
 Currently, trhe pdf files and subsequently vectordb index does not persist be aoptween concurrent api calls, this needs to be fixed. In order to fix that, need to implweemnt sessions and aionl methods such as:
 1. create_index
