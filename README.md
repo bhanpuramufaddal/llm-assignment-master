@@ -7,7 +7,7 @@ The structure of the app is as follows:
 1. Backend -> Fastapi
 2. Frontend -> Vue.js
 3. Model -> gemma-2b-it (local)
-4. VectorDB -> ChromaDb   
+4. VectorDB -> ChromaDb (local)   
 
 The app is dockerized. I have created 2 separated containers for frontend and backend and orchestrated them using docker-compose.yaml file. 
 In order to run the application:
@@ -25,10 +25,10 @@ In order to run the application:
 2. `yarn serve`
 
 ## Additional Notes
-1. Only pdf files are supported, if you upload a file other than a pdf, the UI will throw an error on the screen.
-2. The max file size supported is 10 MB, if a file is bigger than that, you get an error.
+1. Only pdf files are supported.
+2. The max file size supported is 10 MB.
 
-Currently, trhe pdf files and subsequently vectordb index does not persist be aoptween concurrent api calls, this needs to be fixed. In order to fix that, need to implweemnt sessions and aionl methods such as:
+Currently, the pdf files and subsequently vectordb index does not persist be aoptween concurrent api calls, this needs to be fixed. In order to fix that, we need to implweemnt sessions and additional methods such as:
 1. create_index
 2. upsert_file
 3. remove_index
